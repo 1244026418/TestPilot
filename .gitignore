@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+testpilot.db
+test_testpilot.db
+reports/*.html
+reports/*.json
+server.log
+server.err.log
+ui-check.log
+ui-check.err.log
+server-8001.log
+server-8001.err.log

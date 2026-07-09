@@ -1,0 +1,39 @@
+### Health
+GET http://127.0.0.1:8000/health
+
+### Register
+POST http://127.0.0.1:8000/auth/register
+Content-Type: application/json
+
+{
+  "username": "tester",
+  "password": "123456"
+}
+
+### Create Project
+POST http://127.0.0.1:8000/projects
+Content-Type: application/json
+
+{
+  "name": "Demo API 自动化测试",
+  "description": "演示接口自动化测试全链路"
+}
+
+### Generate AI Case Drafts
+POST http://127.0.0.1:8000/ai/generate-cases
+Content-Type: application/json
+
+{
+  "requirement": "用户登录接口，需要校验账号密码、异常参数和鉴权失败",
+  "method": "POST",
+  "url": "http://127.0.0.1:8000/demo-target/login",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "username": "demo",
+    "password": "123456"
+  },
+  "expected_status": 200
+}
+

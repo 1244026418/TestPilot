@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TestPilot 接口自动化测试平台</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">TP</div>
+        <div>
+          <h1>TestPilot</h1>
+          <p>接口自动化测试平台</p>
+        </div>
+      </div>
+
+      <section class="panel compact-panel">
+        <div class="panel-title">
+          <h2>新建项目</h2>
+        </div>
+        <form id="projectForm" class="stack">
+          <label>
+            项目名称
+            <input name="name" placeholder="例如：登录接口测试" required>
+          </label>
+          <label>
+            项目描述
+            <textarea name="description" rows="3" placeholder="接口范围、测试目标"></textarea>
+          </label>
+          <button class="primary" type="submit">创建项目</button>
+          <button class="secondary" type="button" id="demoProjectBtn">生成演示项目</button>
+        </form>
+      </section>
+
+      <section class="panel project-panel">
+        <div class="panel-title">
+          <h2>项目列表</h2>
+          <button class="icon-button" id="refreshProjectsBtn" title="刷新">刷新</button>
+        </div>
+        <div id="projectList" class="project-list"></div>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">测试工作台</p>
+          <h2 id="currentProjectTitle">请选择项目</h2>
+        </div>
+        <div class="topbar-actions">
+          <a class="ghost-link" href="/docs" target="_blank">接口文档</a>
+          <button class="primary" id="runProjectBtn" disabled>执行项目</button>
+        </div>
+      </header>
+
+      <section class="metrics" id="statsCards">
+        <article>
+          <span>项目</span>
+          <strong id="statProjects">0</strong>
+        </article>
+        <article>
+          <span>接口</span>
+          <strong id="statEndpoints">0</strong>
+        </article>
+        <article>
+          <span>用例</span>
+          <strong id="statCases">0</strong>
+        </article>
+        <article>
+          <span>执行</span>
+          <strong id="statRuns">0</strong>
+        </article>
+      </section>
+
+      <div class="content-grid">
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>接口管理</h2>
+              <p id="endpointHint">选择项目后录入接口</p>
+            </div>
+          </div>
+          <form id="endpointForm" class="form-grid">
+            <label>
+              接口名称
+              <input name="name" placeholder="用户登录" required>
+            </label>
+            <label>
+              请求方法
+              <select name="method">
+                <option>GET</option>
+                <option selected>POST</option>
+                <option>PUT</option>
+                <option>PATCH</option>
+                <option>DELETE</option>
+              </select>
+            </label>
+            <label class="span-2">
+              请求地址
+              <input name="url" placeholder="http://127.0.0.1:8000/demo-target/login" required>
+            </label>
+            <label>
+              预期状态码
+              <input name="expected_status" type="number" value="200" required>
+            </label>
+            <label>
+              Headers JSON
+              <textarea name="headers" rows="5">{"Content-Type":"application/json"}</textarea>
+            </label>
+            <label class="span-2">
+              Body JSON
+              <textarea name="body" rows="6">{"username":"demo","password":"123456"}</textarea>
+            </label>
+            <div class="form-actions span-2">
+              <button class="primary" type="submit" disabled>保存接口</button>
+            </div>
+          </form>
+          <div id="endpointList" class="item-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>测试用例</h2>
+              <p id="caseHint">选择接口后管理用例</p>
+            </div>
+          </div>
+
+          <form id="generateForm" class="stack">
+            <label>
+              需求描述
+              <textarea name="requirement" rows="3">用户登录接口，需要校验账号密码、异常参数和鉴权失败</textarea>
+            </label>
+            <button class="secondary" type="submit" disabled>生成用例</button>
+          </form>
+
+          <form id="caseForm" class="form-grid case-form">
+            <label>
+              用例标题
+              <input name="title" placeholder="登录成功" required>
+            </label>
+            <label>
+              类型
+              <select name="category">
+                <option value="normal">正常</option>
+                <option value="exception">异常</option>
+                <option value="boundary">边界</option>
+                <option value="auth">鉴权</option>
+              </select>
+            </label>
+            <label>
+              预期状态码
+              <input name="expected_status" type="number" value="200">
+            </label>
+            <label>
+              响应包含
+              <input name="expected_contains" placeholder="可选">
+            </label>
+            <label class="span-2">
+              请求体 JSON
+              <textarea name="request_body" rows="5">{"username":"demo","password":"123456"}</textarea>
+            </label>
+            <label class="span-2">
+              设计原因
+              <textarea name="reason" rows="2" placeholder="验证正确账号密码可登录"></textarea>
+            </label>
+            <div class="form-actions span-2">
+              <button class="primary" type="submit" disabled>保存用例</button>
+            </div>
+          </form>
+          <div id="caseList" class="item-list"></div>
+        </section>
+      </div>
+
+      <section class="panel runs-panel">
+        <div class="panel-title">
+          <div>
+            <h2>执行记录</h2>
+            <p id="runHint">执行后生成 HTML 报告</p>
+          </div>
+        </div>
+        <div id="runList" class="run-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
