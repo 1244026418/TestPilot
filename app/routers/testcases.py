@@ -2,14 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
+from app.auth import get_current_user
+from app.config import OPENAI_MODEL
 from app.database import get_db
 from app.models import ApiEndpoint, TestCase
-from app.schemas import TestCaseCreate, TestCaseRead
-from app.services.ai_case_generator import generate_cases
+from app.schemas import GenerateCasesRequest, TestCaseCreate, TestCaseRead
+from app.services.openai_case_generator import generate_cases_smart
 from app.utils import from_json_text, to_json_text
 
 
-router = APIRouter(prefix="/endpoints/{endpoint_id}/cases", tags=["test cases"])
+router = APIRouter(
+    prefix="/endpoints/{endpoint_id}/cases",
+    tags=["test cases"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 def _case_to_read(case: TestCase) -> TestCaseRead:
@@ -57,17 +63,22 @@ def list_cases(endpoint_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/generate", response_model=List[TestCaseRead])
-def generate_and_save_cases(endpoint_id: int, requirement: str, db: Session = Depends(get_db)):
+def generate_and_save_cases(
+    endpoint_id: int,
+    payload: GenerateCasesRequest,
+    db: Session = Depends(get_db),
+):
     endpoint = db.query(ApiEndpoint).filter(ApiEndpoint.id == endpoint_id).first()
     if endpoint is None:
         raise HTTPException(status_code=404, detail="endpoint not found")
-    drafts = generate_cases(
-        requirement=requirement,
+    drafts, provider, _message = generate_cases_smart(
+        requirement=payload.requirement,
         method=endpoint.method,
         url=endpoint.url,
         headers=from_json_text(endpoint.headers_json),
         body=from_json_text(endpoint.body_json),
         expected_status=endpoint.expected_status,
+        use_ai=payload.use_ai,
     )
     created: List[TestCase] = []
     for draft in drafts:
@@ -80,7 +91,7 @@ def generate_and_save_cases(endpoint_id: int, requirement: str, db: Session = De
             expected_status=draft["expected_status"],
             expected_contains=draft.get("expected_contains"),
             reason=draft["reason"],
-            created_by_ai=True,
+            created_by_ai=provider == "openai",
         )
         db.add(case)
         created.append(case)

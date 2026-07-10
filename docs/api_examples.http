@@ -1,8 +1,11 @@
-### Health
-GET http://127.0.0.1:8000/health
+@baseUrl = http://127.0.0.1:8000/api
+@token = replace-with-login-token
 
-### Register
-POST http://127.0.0.1:8000/auth/register
+### 健康检查
+GET {{baseUrl}}/health
+
+### 注册
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
@@ -10,30 +13,36 @@ Content-Type: application/json
   "password": "123456"
 }
 
-### Create Project
-POST http://127.0.0.1:8000/projects
+### 登录
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "name": "Demo API 自动化测试",
-  "description": "演示接口自动化测试全链路"
+  "username": "tester",
+  "password": "123456"
 }
 
-### Generate AI Case Drafts
-POST http://127.0.0.1:8000/ai/generate-cases
+### 创建项目
+POST {{baseUrl}}/projects
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "requirement": "用户登录接口，需要校验账号密码、异常参数和鉴权失败",
+  "name": "登录接口测试",
+  "description": "覆盖登录接口的正常、异常和边界场景"
+}
+
+### GPT / 规则生成测试用例草稿
+POST {{baseUrl}}/ai/generate-cases
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "requirement": "用户登录接口，需要校验账号密码、缺少参数和鉴权失败",
   "method": "POST",
   "url": "http://127.0.0.1:8000/demo-target/login",
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "body": {
-    "username": "demo",
-    "password": "123456"
-  },
-  "expected_status": 200
+  "headers": {"Content-Type": "application/json"},
+  "body": {"username": "demo", "password": "123456"},
+  "expected_status": 200,
+  "use_ai": true
 }
-

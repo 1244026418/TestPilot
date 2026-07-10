@@ -4,13 +4,18 @@ from pathlib import Path
 from sqlalchemy.orm import Session, selectinload
 from typing import List
 
+from app.auth import get_current_user
 from app.database import get_db
 from app.models import TestRun
 from app.schemas import TestRunRead
 from app.services.runner import execute_project
 
 
-router = APIRouter(prefix="/projects/{project_id}/runs", tags=["runs"])
+router = APIRouter(
+    prefix="/projects/{project_id}/runs",
+    tags=["runs"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.post("", response_model=TestRunRead)

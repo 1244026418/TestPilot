@@ -14,9 +14,19 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+    role: str
+    created_at: datetime
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    user: UserRead
 
 
 class ProjectCreate(BaseModel):
@@ -83,6 +93,11 @@ class TestCaseRead(BaseModel):
     created_at: datetime
 
 
+class GenerateCasesRequest(BaseModel):
+    requirement: str = Field(min_length=4)
+    use_ai: bool = True
+
+
 class AIGenerateRequest(BaseModel):
     requirement: str = Field(min_length=4)
     method: str = "GET"
@@ -90,6 +105,7 @@ class AIGenerateRequest(BaseModel):
     headers: Dict[str, Any] = Field(default_factory=dict)
     body: Dict[str, Any] = Field(default_factory=dict)
     expected_status: int = 200
+    use_ai: bool = True
 
 
 class GeneratedCase(BaseModel):
@@ -100,6 +116,13 @@ class GeneratedCase(BaseModel):
     expected_status: int
     expected_contains: Optional[str] = None
     reason: str
+
+
+class AIGenerateResponse(BaseModel):
+    provider: str
+    model: Optional[str] = None
+    message: str = ""
+    cases: List[GeneratedCase]
 
 
 class TestResultRead(BaseModel):
@@ -137,3 +160,15 @@ class DashboardStats(BaseModel):
     passed_runs: int
     failed_runs: int
     latest_run: Optional[TestRunRead] = None
+
+
+class ImportDocumentRequest(BaseModel):
+    content: str = Field(min_length=2)
+    base_url: str = ""
+
+
+class ImportResult(BaseModel):
+    imported: int
+    skipped: int
+    endpoint_ids: List[int]
+    message: str

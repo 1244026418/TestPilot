@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 
-from app.config import STATIC_DIR
+from app.config import FRONTEND_DIST
 from app.database import init_db
-from app.routers import ai, auth, dashboard, demo_target, endpoints, projects, runs, testcases
+from app.routers import ai, auth, dashboard, demo_target, endpoints, imports, projects, runs, testcases
 
 
 @asynccontextmanager
@@ -16,28 +17,58 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="TestPilot",
-    description="AI assisted API test automation platform MVP",
-    version="0.1.0",
+    title="TestPilot API",
+    description="AI 辅助接口自动化测试平台",
+    version="0.2.0",
     lifespan=lifespan,
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(auth.router)
-app.include_router(projects.router)
-app.include_router(endpoints.router)
-app.include_router(testcases.router)
-app.include_router(ai.router)
-app.include_router(runs.router)
-app.include_router(dashboard.router)
+for router in (auth.router, projects.router, endpoints.router, testcases.router, ai.router, runs.router, dashboard.router, imports.router):
+    app.include_router(router, prefix="/api")
 app.include_router(demo_target.router)
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-@app.get("/", tags=["system"], response_class=FileResponse)
-def index():
-    return FileResponse(STATIC_DIR / "index.html")
+@app.get("/api/health", tags=["system"])
+def api_health():
+    return {"status": "ok"}
 
 
 @app.get("/health", tags=["system"])
 def health():
     return {"status": "ok"}
+
+
+def _frontend_response(path: str = "index.html"):
+    candidate = (FRONTEND_DIST / path).resolve()
+    dist_root = FRONTEND_DIST.resolve()
+    if candidate.is_file() and (candidate == dist_root or dist_root in candidate.parents):
+        return FileResponse(candidate)
+    index_file = FRONTEND_DIST / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return JSONResponse(
+        {
+            "name": "TestPilot",
+            "message": "Vue 前端尚未构建。开发模式请运行 npm run dev，生产模式请运行 npm run build。",
+            "api_docs": "/docs",
+        }
+    )
+
+
+@app.get("/", include_in_schema=False)
+def index():
+    return _frontend_response()
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def spa_fallback(full_path: str):
+    if full_path.startswith(("api/", "docs", "redoc", "openapi.json", "demo-target/")):
+        raise HTTPException(status_code=404, detail="not found")
+    return _frontend_response(full_path)

@@ -1,0 +1,66 @@
+:root {
+  font-family: Inter, "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+  color: #172033;
+  background: #f4f6f9;
+  font-synthesis: none;
+  letter-spacing: 0;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: #f4f6f9; }
+button, input, textarea, select { letter-spacing: 0; }
+.app-layout { min-height: 100vh; }
+.app-aside { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; border-right: 1px solid #dfe4ec; background: #ffffff; }
+.brand-block { height: 76px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #edf0f5; }
+.brand-mark { width: 42px; height: 42px; border-radius: 8px; display: grid; place-items: center; color: #fff; background: #172033; font-weight: 800; }
+.brand-block strong, .brand-block span, .aside-user strong, .aside-user span { display: block; }
+.brand-block strong { font-size: 18px; }
+.brand-block span, .aside-user span { margin-top: 3px; color: #7a8495; font-size: 12px; }
+.app-menu { flex: 1; border-right: 0 !important; padding: 12px; }
+.app-menu .el-menu-item { margin-bottom: 6px; border-radius: 6px; }
+.aside-user { min-height: 70px; padding: 12px 16px; border-top: 1px solid #edf0f5; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.app-header { height: 76px; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #dfe4ec; background: #fff; }
+.app-header h1 { margin: 0; font-size: 20px; }
+.app-header p { margin: 5px 0 0; color: #7a8495; font-size: 13px; }
+.app-main { padding: 24px 28px; overflow: visible; }
+.page-heading { margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.page-heading h2 { margin: 0; font-size: 22px; }
+.page-heading p { margin: 6px 0 0; color: #7a8495; }
+.surface { padding: 18px; border: 1px solid #dfe4ec; border-radius: 8px; background: #fff; }
+.metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.metric-item { min-height: 112px; padding: 18px; border: 1px solid #dfe4ec; border-radius: 8px; background: #fff; }
+.metric-item span { color: #7a8495; font-size: 13px; }
+.metric-item strong { display: block; margin-top: 12px; font-size: 32px; }
+.section-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; margin-top: 18px; }
+.toolbar { margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.code-input textarea { font-family: Consolas, "Courier New", monospace; line-height: 1.55; }
+.status-passed { color: #12804a; }
+.status-failed { color: #c53d35; }
+.login-page { min-height: 100vh; display: grid; grid-template-columns: minmax(320px, 440px) minmax(0, 1fr); background: #f4f6f9; }
+.login-panel { padding: 56px; display: flex; flex-direction: column; justify-content: center; background: #fff; border-right: 1px solid #dfe4ec; }
+.login-brand { margin-bottom: 36px; }
+.login-brand h1 { margin: 0; font-size: 34px; }
+.login-brand p { color: #667085; line-height: 1.7; }
+.login-scene { padding: 56px; display: flex; align-items: center; background: #172033; color: #fff; }
+.login-scene h2 { max-width: 700px; margin: 0; font-size: 42px; line-height: 1.3; }
+.login-scene p { max-width: 620px; color: #cbd3df; line-height: 1.8; }
+
+@media (max-width: 1000px) {
+  .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .section-grid { grid-template-columns: 1fr; }
+  .login-page { grid-template-columns: 1fr; }
+  .login-scene { display: none; }
+}
+
+@media (max-width: 720px) {
+  .app-aside { width: 72px !important; }
+  .brand-block { padding: 14px; }
+  .brand-block > div:last-child, .app-menu span, .aside-user > div { display: none; }
+  .app-menu { padding: 8px; }
+  .app-menu .el-menu-item { justify-content: center; padding: 0 !important; }
+  .app-main { padding: 18px 14px; }
+  .app-header { padding: 0 16px; }
+  .app-header p { display: none; }
+  .metric-grid { grid-template-columns: 1fr 1fr; }
+  .login-panel { padding: 28px; }
+}

@@ -1,0 +1,42 @@
+services:
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${TESTPILOT_MYSQL_PASSWORD:-testpilot}
+      MYSQL_DATABASE: ${TESTPILOT_MYSQL_DATABASE:-testpilot}
+    ports:
+      - "3307:3306"
+    volumes:
+      - testpilot_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${TESTPILOT_MYSQL_PASSWORD:-testpilot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      TESTPILOT_DB_DRIVER: mysql
+      TESTPILOT_MYSQL_HOST: mysql
+      TESTPILOT_MYSQL_PORT: 3306
+      TESTPILOT_MYSQL_USER: root
+      TESTPILOT_MYSQL_PASSWORD: ${TESTPILOT_MYSQL_PASSWORD:-testpilot}
+      TESTPILOT_MYSQL_DATABASE: ${TESTPILOT_MYSQL_DATABASE:-testpilot}
+      TESTPILOT_SECRET_KEY: ${TESTPILOT_SECRET_KEY:-replace-this-in-production}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./reports:/app/reports
+
+volumes:
+  testpilot_mysql:

@@ -2,13 +2,18 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
+from app.auth import get_current_user
 from app.database import get_db
 from app.models import ApiEndpoint, Project
 from app.schemas import EndpointCreate, EndpointRead
 from app.utils import from_json_text, to_json_text
 
 
-router = APIRouter(prefix="/projects/{project_id}/endpoints", tags=["endpoints"])
+router = APIRouter(
+    prefix="/projects/{project_id}/endpoints",
+    tags=["endpoints"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 def _endpoint_to_read(endpoint: ApiEndpoint) -> EndpointRead:

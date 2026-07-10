@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
+from app.auth import get_current_user, require_admin
 from app.database import get_db
 from app.models import Project
 from app.schemas import ProjectCreate, ProjectRead
 
 
-router = APIRouter(prefix="/projects", tags=["projects"])
+router = APIRouter(prefix="/projects", tags=["projects"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("", response_model=ProjectRead)
@@ -33,7 +34,11 @@ def get_project(project_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{project_id}")
-def delete_project(project_id: int, db: Session = Depends(get_db)):
+def delete_project(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+):
     project = db.query(Project).filter(Project.id == project_id).first()
     if project is None:
         raise HTTPException(status_code=404, detail="project not found")
