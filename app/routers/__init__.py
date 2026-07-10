@@ -1,2 +1,2 @@
-"""HTTP routers."""
+"""HTTP 路由模块。"""
 

@@ -1,2 +1,2 @@
-"""TestPilot application package."""
+"""TestPilot 应用程序包。"""
 

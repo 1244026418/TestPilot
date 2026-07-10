@@ -1,2 +1,2 @@
-"""Service layer for AI generation, running tests, and reporting."""
+"""负责 AI 用例生成、测试执行和报告生成的服务层。"""
 

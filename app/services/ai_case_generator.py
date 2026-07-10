@@ -30,7 +30,7 @@ def generate_cases(
     body: Optional[Dict[str, Any]] = None,
     expected_status: int = 200,
 ) -> List[Dict[str, Any]]:
-    """Generate interview-friendly API test cases without requiring an LLM key."""
+    """在不依赖大模型密钥的情况下生成结构完整的 API 测试用例。"""
     headers = headers or {}
     body = body or {}
     requirement_lower = requirement.lower()
