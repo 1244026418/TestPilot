@@ -18,11 +18,36 @@ def init_db() -> None:
 
     Base.metadata.create_all(bind=engine)
     inspector = inspect(engine)
-    if "users" in inspector.get_table_names():
+    table_names = inspector.get_table_names()
+    if "users" in table_names:
         user_columns = {column["name"] for column in inspector.get_columns("users")}
         if "role" not in user_columns:
             with engine.begin() as connection:
                 connection.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(32) NOT NULL DEFAULT 'user'"))
+
+    additions = {
+        "test_cases": {
+            "assertions_json": "TEXT NOT NULL DEFAULT ('[]')",
+            "extractors_json": "TEXT NOT NULL DEFAULT ('[]')",
+        },
+        "test_runs": {
+            "environment_id": "INTEGER NULL",
+            "environment_name": "VARCHAR(128) NULL",
+        },
+        "test_results": {
+            "request_url": "TEXT NULL",
+            "assertion_results_json": "TEXT NOT NULL DEFAULT ('[]')",
+            "extracted_variables_json": "TEXT NOT NULL DEFAULT ('[]')",
+        },
+    }
+    with engine.begin() as connection:
+        for table_name, columns in additions.items():
+            if table_name not in table_names:
+                continue
+            existing = {column["name"] for column in inspector.get_columns(table_name)}
+            for column_name, definition in columns.items():
+                if column_name not in existing:
+                    connection.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {definition}"))
 
 
 def get_db():

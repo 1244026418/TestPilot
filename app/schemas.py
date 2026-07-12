@@ -43,6 +43,32 @@ class ProjectRead(BaseModel):
     created_at: datetime
 
 
+class EnvironmentCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=128)
+    base_url: str = ""
+    variables: Dict[str, Any] = Field(default_factory=dict)
+    is_active: bool = False
+
+
+class EnvironmentUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=128)
+    base_url: Optional[str] = None
+    variables: Optional[Dict[str, Any]] = None
+    is_active: Optional[bool] = None
+
+
+class EnvironmentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    project_id: int
+    name: str
+    base_url: str
+    variables: Dict[str, Any]
+    is_active: bool
+    created_at: datetime
+
+
 class EndpointCreate(BaseModel):
     name: str = Field(min_length=1, max_length=128)
     method: str = "GET"
@@ -73,6 +99,8 @@ class TestCaseCreate(BaseModel):
     request_body: Dict[str, Any] = Field(default_factory=dict)
     expected_status: Optional[int] = None
     expected_contains: Optional[str] = None
+    assertions: List[Dict[str, Any]] = Field(default_factory=list)
+    extractors: List[Dict[str, Any]] = Field(default_factory=list)
     reason: str = ""
     created_by_ai: bool = False
 
@@ -88,6 +116,8 @@ class TestCaseRead(BaseModel):
     request_body: Dict[str, Any]
     expected_status: Optional[int]
     expected_contains: Optional[str]
+    assertions: List[Dict[str, Any]]
+    extractors: List[Dict[str, Any]]
     reason: str
     created_by_ai: bool
     created_at: datetime
@@ -133,8 +163,15 @@ class TestResultRead(BaseModel):
     status: str
     status_code: Optional[int]
     elapsed_ms: Optional[int]
+    request_url: Optional[str]
     error: Optional[str]
     response_snippet: Optional[str]
+    assertion_results: List[Dict[str, Any]] = Field(default_factory=list)
+    extracted_variables: List[str] = Field(default_factory=list)
+
+
+class RunCreate(BaseModel):
+    environment_id: Optional[int] = None
 
 
 class TestRunRead(BaseModel):
@@ -142,6 +179,8 @@ class TestRunRead(BaseModel):
 
     id: int
     project_id: int
+    environment_id: Optional[int]
+    environment_name: Optional[str]
     status: str
     total: int
     passed: int

@@ -25,7 +25,22 @@ class Project(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     endpoints = relationship("ApiEndpoint", back_populates="project", cascade="all, delete-orphan")
+    environments = relationship("TestEnvironment", back_populates="project", cascade="all, delete-orphan")
     runs = relationship("TestRun", back_populates="project", cascade="all, delete-orphan")
+
+
+class TestEnvironment(Base):
+    __tablename__ = "test_environments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
+    name = Column(String(128), nullable=False)
+    base_url = Column(String(512), default="", nullable=False)
+    variables_json = Column(Text, default="{}", nullable=False)
+    is_active = Column(Boolean, default=False, nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    project = relationship("Project", back_populates="environments")
 
 
 class ApiEndpoint(Base):
@@ -56,6 +71,8 @@ class TestCase(Base):
     request_body_json = Column(Text, default="{}", nullable=False)
     expected_status = Column(Integer, nullable=True)
     expected_contains = Column(String(256), nullable=True)
+    assertions_json = Column(Text, default="[]", nullable=False)
+    extractors_json = Column(Text, default="[]", nullable=False)
     reason = Column(Text, default="", nullable=False)
     created_by_ai = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -69,6 +86,8 @@ class TestRun(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
+    environment_id = Column(Integer, ForeignKey("test_environments.id"), nullable=True, index=True)
+    environment_name = Column(String(128), nullable=True)
     status = Column(String(24), default="running", nullable=False)
     total = Column(Integer, default=0, nullable=False)
     passed = Column(Integer, default=0, nullable=False)
@@ -91,9 +110,24 @@ class TestResult(Base):
     status = Column(String(16), nullable=False)
     status_code = Column(Integer, nullable=True)
     elapsed_ms = Column(Integer, nullable=True)
+    request_url = Column(Text, nullable=True)
     error = Column(Text, nullable=True)
     response_snippet = Column(Text, nullable=True)
+    assertion_results_json = Column(Text, default="[]", nullable=False)
+    extracted_variables_json = Column(Text, default="[]", nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     run = relationship("TestRun", back_populates="results")
     case = relationship("TestCase", back_populates="results")
+
+    @property
+    def assertion_results(self):
+        from app.utils import from_json_text
+
+        return from_json_text(self.assertion_results_json, [])
+
+    @property
+    def extracted_variables(self):
+        from app.utils import from_json_text
+
+        return from_json_text(self.extracted_variables_json, [])

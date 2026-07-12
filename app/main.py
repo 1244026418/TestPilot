@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import FRONTEND_DIST
 from app.database import init_db
-from app.routers import ai, auth, dashboard, demo_target, endpoints, imports, projects, runs, testcases
+from app.routers import ai, auth, dashboard, demo_target, endpoints, environments, imports, projects, runs, testcases
 
 
 @asynccontextmanager
@@ -30,7 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for router in (auth.router, projects.router, endpoints.router, testcases.router, ai.router, runs.router, dashboard.router, imports.router):
+for router in (auth.router, projects.router, environments.router, endpoints.router, testcases.router, ai.router, runs.router, dashboard.router, imports.router):
     app.include_router(router, prefix="/api")
 app.include_router(demo_target.router)
 

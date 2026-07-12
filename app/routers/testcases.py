@@ -28,10 +28,25 @@ def _case_to_read(case: TestCase) -> TestCaseRead:
         request_body=from_json_text(case.request_body_json),
         expected_status=case.expected_status,
         expected_contains=case.expected_contains,
+        assertions=from_json_text(case.assertions_json, []),
+        extractors=from_json_text(case.extractors_json, []),
         reason=case.reason,
         created_by_ai=case.created_by_ai,
         created_at=case.created_at,
     )
+
+
+def _apply_payload(case: TestCase, payload: TestCaseCreate) -> None:
+    case.title = payload.title
+    case.category = payload.category
+    case.request_headers_json = to_json_text(payload.request_headers)
+    case.request_body_json = to_json_text(payload.request_body)
+    case.expected_status = payload.expected_status
+    case.expected_contains = payload.expected_contains
+    case.assertions_json = to_json_text(payload.assertions)
+    case.extractors_json = to_json_text(payload.extractors)
+    case.reason = payload.reason
+    case.created_by_ai = payload.created_by_ai
 
 
 @router.post("", response_model=TestCaseRead)
@@ -41,15 +56,8 @@ def create_case(endpoint_id: int, payload: TestCaseCreate, db: Session = Depends
         raise HTTPException(status_code=404, detail="endpoint not found")
     case = TestCase(
         endpoint_id=endpoint_id,
-        title=payload.title,
-        category=payload.category,
-        request_headers_json=to_json_text(payload.request_headers),
-        request_body_json=to_json_text(payload.request_body),
-        expected_status=payload.expected_status,
-        expected_contains=payload.expected_contains,
-        reason=payload.reason,
-        created_by_ai=payload.created_by_ai,
     )
+    _apply_payload(case, payload)
     db.add(case)
     db.commit()
     db.refresh(case)
@@ -60,6 +68,17 @@ def create_case(endpoint_id: int, payload: TestCaseCreate, db: Session = Depends
 def list_cases(endpoint_id: int, db: Session = Depends(get_db)):
     cases = db.query(TestCase).filter(TestCase.endpoint_id == endpoint_id).order_by(TestCase.id.desc()).all()
     return [_case_to_read(case) for case in cases]
+
+
+@router.put("/{case_id}", response_model=TestCaseRead)
+def update_case(endpoint_id: int, case_id: int, payload: TestCaseCreate, db: Session = Depends(get_db)):
+    case = db.query(TestCase).filter(TestCase.endpoint_id == endpoint_id, TestCase.id == case_id).first()
+    if case is None:
+        raise HTTPException(status_code=404, detail="case not found")
+    _apply_payload(case, payload)
+    db.commit()
+    db.refresh(case)
+    return _case_to_read(case)
 
 
 @router.post("/generate", response_model=List[TestCaseRead])
@@ -90,6 +109,8 @@ def generate_and_save_cases(
             request_body_json=to_json_text(draft["request_body"]),
             expected_status=draft["expected_status"],
             expected_contains=draft.get("expected_contains"),
+            assertions_json=to_json_text([]),
+            extractors_json=to_json_text([]),
             reason=draft["reason"],
             created_by_ai=provider == "openai",
         )

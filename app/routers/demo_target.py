@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Response
 from typing import Optional
 
 
@@ -6,20 +6,22 @@ router = APIRouter(prefix="/demo-target", tags=["demo target"])
 
 
 @router.post("/login")
-def demo_login(payload: dict):
+def demo_login(payload: dict, response: Response):
     username = payload.get("username")
     password = payload.get("password")
     if not username or not password:
         raise HTTPException(status_code=400, detail="username and password are required")
     if username == "demo" and password == "123456":
+        response.headers["X-Demo-Service"] = "TestPilot"
         return {"token": "demo-token", "username": username}
     raise HTTPException(status_code=401, detail="invalid credentials")
 
 
 @router.get("/profile")
-def demo_profile(authorization: Optional[str] = Header(default=None)):
+def demo_profile(response: Response, authorization: Optional[str] = Header(default=None)):
     if authorization != "Bearer demo-token":
         raise HTTPException(status_code=401, detail="missing or invalid token")
+    response.headers["X-Demo-Service"] = "TestPilot"
     return {"username": "demo", "role": "tester"}
 
 

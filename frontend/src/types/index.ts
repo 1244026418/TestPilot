@@ -24,6 +24,29 @@ export interface ApiEndpoint {
   created_at: string
 }
 
+export interface TestEnvironment {
+  id: number
+  project_id: number
+  name: string
+  base_url: string
+  variables: Record<string, unknown>
+  is_active: boolean
+  created_at: string
+}
+
+export interface AssertionRule {
+  type: string
+  operator?: string
+  target?: string
+  expected?: unknown
+  schema?: Record<string, unknown>
+}
+
+export interface ExtractorRule {
+  name: string
+  expression: string
+}
+
 export interface TestCase {
   id: number
   endpoint_id: number
@@ -33,6 +56,8 @@ export interface TestCase {
   request_body: Record<string, unknown>
   expected_status: number | null
   expected_contains: string | null
+  assertions: AssertionRule[]
+  extractors: ExtractorRule[]
   reason: string
   created_by_ai: boolean
   created_at: string
@@ -44,13 +69,25 @@ export interface TestResult {
   status: string
   status_code: number | null
   elapsed_ms: number | null
+  request_url: string | null
   error: string | null
   response_snippet: string | null
+  assertion_results: Array<{
+    type: string
+    target: string
+    passed: boolean
+    expected: unknown
+    actual: unknown
+    message: string
+  }>
+  extracted_variables: string[]
 }
 
 export interface TestRun {
   id: number
   project_id: number
+  environment_id: number | null
+  environment_name: string | null
   status: string
   total: number
   passed: number
