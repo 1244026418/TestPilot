@@ -13,7 +13,7 @@ from app.utils import from_json_text, to_json_text
 
 router = APIRouter(
     prefix="/endpoints/{endpoint_id}/cases",
-    tags=["test cases"],
+    tags=["测试用例"],
     dependencies=[Depends(get_current_user)],
 )
 
@@ -49,11 +49,11 @@ def _apply_payload(case: TestCase, payload: TestCaseCreate) -> None:
     case.created_by_ai = payload.created_by_ai
 
 
-@router.post("", response_model=TestCaseRead)
+@router.post("", response_model=TestCaseRead, summary="创建测试用例")
 def create_case(endpoint_id: int, payload: TestCaseCreate, db: Session = Depends(get_db)):
     endpoint = db.query(ApiEndpoint).filter(ApiEndpoint.id == endpoint_id).first()
     if endpoint is None:
-        raise HTTPException(status_code=404, detail="endpoint not found")
+        raise HTTPException(status_code=404, detail="接口不存在")
     case = TestCase(
         endpoint_id=endpoint_id,
     )
@@ -64,24 +64,24 @@ def create_case(endpoint_id: int, payload: TestCaseCreate, db: Session = Depends
     return _case_to_read(case)
 
 
-@router.get("", response_model=List[TestCaseRead])
+@router.get("", response_model=List[TestCaseRead], summary="获取测试用例列表")
 def list_cases(endpoint_id: int, db: Session = Depends(get_db)):
     cases = db.query(TestCase).filter(TestCase.endpoint_id == endpoint_id).order_by(TestCase.id.desc()).all()
     return [_case_to_read(case) for case in cases]
 
 
-@router.put("/{case_id}", response_model=TestCaseRead)
+@router.put("/{case_id}", response_model=TestCaseRead, summary="更新测试用例")
 def update_case(endpoint_id: int, case_id: int, payload: TestCaseCreate, db: Session = Depends(get_db)):
     case = db.query(TestCase).filter(TestCase.endpoint_id == endpoint_id, TestCase.id == case_id).first()
     if case is None:
-        raise HTTPException(status_code=404, detail="case not found")
+        raise HTTPException(status_code=404, detail="测试用例不存在")
     _apply_payload(case, payload)
     db.commit()
     db.refresh(case)
     return _case_to_read(case)
 
 
-@router.post("/generate", response_model=List[TestCaseRead])
+@router.post("/generate", response_model=List[TestCaseRead], summary="生成并保存测试用例")
 def generate_and_save_cases(
     endpoint_id: int,
     payload: GenerateCasesRequest,
@@ -89,7 +89,7 @@ def generate_and_save_cases(
 ):
     endpoint = db.query(ApiEndpoint).filter(ApiEndpoint.id == endpoint_id).first()
     if endpoint is None:
-        raise HTTPException(status_code=404, detail="endpoint not found")
+        raise HTTPException(status_code=404, detail="接口不存在")
     drafts, provider, _message = generate_cases_smart(
         requirement=payload.requirement,
         method=endpoint.method,
@@ -122,11 +122,11 @@ def generate_and_save_cases(
     return [_case_to_read(case) for case in created]
 
 
-@router.delete("/{case_id}")
+@router.delete("/{case_id}", summary="删除测试用例")
 def delete_case(endpoint_id: int, case_id: int, db: Session = Depends(get_db)):
     case = db.query(TestCase).filter(TestCase.endpoint_id == endpoint_id, TestCase.id == case_id).first()
     if case is None:
-        raise HTTPException(status_code=404, detail="case not found")
+        raise HTTPException(status_code=404, detail="测试用例不存在")
     db.delete(case)
     db.commit()
-    return {"message": "case deleted", "case_id": case_id}
+    return {"message": "测试用例已删除", "case_id": case_id}

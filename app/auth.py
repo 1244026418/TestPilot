@@ -76,13 +76,13 @@ def decode_token(token: str) -> dict:
         signing_input = f"{header_part}.{payload_part}".encode("ascii")
         expected = hmac.new(SECRET_KEY.encode("utf-8"), signing_input, hashlib.sha256).digest()
         if not hmac.compare_digest(expected, _b64_decode(signature_part)):
-            raise ValueError("invalid token signature")
+            raise ValueError("令牌签名无效")
         payload = json.loads(_b64_decode(payload_part))
         if int(payload["exp"]) < int(time.time()):
-            raise ValueError("token expired")
+            raise ValueError("令牌已过期")
         return payload
     except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
-        raise ValueError("invalid or expired token") from exc
+        raise ValueError("令牌无效或已过期") from exc
 
 
 def get_current_user(

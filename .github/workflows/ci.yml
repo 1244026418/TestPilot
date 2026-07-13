@@ -1,4 +1,4 @@
-name: CI
+name: 持续集成
 
 on:
   push:
@@ -7,27 +7,37 @@ on:
 
 jobs:
   backend:
+    name: 后端测试
     runs-on: ubuntu-latest
     env:
       TESTPILOT_DATABASE_URL: sqlite:///./ci_testpilot.db
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 配置 Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install -r requirements.txt
-      - run: pytest
+      - name: 安装后端依赖
+        run: pip install -r requirements.txt
+      - name: 运行后端测试
+        run: pytest
 
   frontend:
+    name: 前端构建
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: npm install
-      - run: npm run build
+      - name: 安装前端依赖
+        run: npm install
+      - name: 构建前端
+        run: npm run build

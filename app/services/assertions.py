@@ -64,7 +64,7 @@ def _compare(actual: Any, operator: str, expected: Any) -> bool:
         return actual < expected
     if operator == "lte":
         return actual <= expected
-    raise ValueError(f"unsupported operator: {operator}")
+    raise ValueError(f"不支持的比较操作：{operator}")
 
 
 def _result(rule_type: str, passed: bool, expected: Any, actual: Any, message: str, target: str = "") -> Dict[str, Any]:

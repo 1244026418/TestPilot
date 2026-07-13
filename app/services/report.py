@@ -8,6 +8,19 @@ from app.models import TestResult, TestRun
 from app.utils import from_json_text
 
 
+CATEGORY_LABELS = {
+    "normal": "正常",
+    "exception": "异常",
+    "boundary": "边界",
+    "auth": "鉴权",
+}
+STATUS_LABELS = {
+    "running": "执行中",
+    "passed": "通过",
+    "failed": "失败",
+}
+
+
 def _display(value: Any) -> str:
     if value is None:
         return "-"
@@ -42,8 +55,8 @@ def render_html_report(run: TestRun, results: List[TestResult]) -> str:
         rows.append(
             "<tr>"
             f"<td><strong>{escape(case.title)}</strong><small>{escape(result.request_url or '-')}</small></td>"
-            f"<td>{escape(case.category)}</td>"
-            f'<td><span class="badge {escape(result.status)}">{escape(result.status)}</span></td>'
+            f"<td>{escape(CATEGORY_LABELS.get(case.category, case.category))}</td>"
+            f'<td><span class="badge {escape(result.status)}">{escape(STATUS_LABELS.get(result.status, result.status))}</span></td>'
             f"<td>{'' if result.status_code is None else result.status_code}</td>"
             f"<td>{'' if result.elapsed_ms is None else result.elapsed_ms}</td>"
             f"<td>{_assertion_list(result)}</td>"
@@ -84,7 +97,7 @@ def render_html_report(run: TestRun, results: List[TestResult]) -> str:
 <body>
 <main>
   <h1>TestPilot 测试报告 #{run.id}</h1>
-  <p>项目 ID：{run.project_id}；测试环境：{environment}；状态：{escape(run.status)}</p>
+  <p>项目 ID：{run.project_id}；测试环境：{environment}；状态：{escape(STATUS_LABELS.get(run.status, run.status))}</p>
   <div class="summary">
     <div class="box"><strong>总数</strong><br>{run.total}</div>
     <div class="box"><strong>通过</strong><br>{run.passed}</div>

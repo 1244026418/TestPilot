@@ -33,7 +33,7 @@ def _normalize_cases(raw_cases: List[Dict[str, Any]], headers: Dict[str, Any], b
             }
         )
     if not normalized:
-        raise ValueError("AI response did not contain valid cases")
+        raise ValueError("AI 响应中没有有效的测试用例")
     return normalized
 
 
@@ -46,7 +46,7 @@ def generate_cases_with_openai(
     expected_status: int = 200,
 ) -> List[Dict[str, Any]]:
     if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY is not configured")
+        raise ValueError("尚未配置 OPENAI_API_KEY")
     headers = headers or {}
     body = body or {}
     system_prompt = (
@@ -101,7 +101,7 @@ def generate_cases_with_openai(
     parsed = _extract_json(content)
     raw_cases = parsed.get("cases", [])
     if not isinstance(raw_cases, list):
-        raise ValueError("AI response cases must be a list")
+        raise ValueError("AI 响应中的测试用例必须为数组")
     return _normalize_cases(raw_cases, headers, body, expected_status)
 
 

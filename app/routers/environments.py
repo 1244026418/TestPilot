@@ -12,7 +12,7 @@ from app.utils import from_json_text, to_json_text
 
 router = APIRouter(
     prefix="/projects/{project_id}/environments",
-    tags=["environments"],
+    tags=["环境管理"],
     dependencies=[Depends(get_current_user)],
 )
 
@@ -40,10 +40,10 @@ def _activate(db: Session, project_id: int, environment_id: int) -> None:
     )
 
 
-@router.post("", response_model=EnvironmentRead)
+@router.post("", response_model=EnvironmentRead, summary="创建测试环境")
 def create_environment(project_id: int, payload: EnvironmentCreate, db: Session = Depends(get_db)):
     if db.query(Project).filter(Project.id == project_id).first() is None:
-        raise HTTPException(status_code=404, detail="project not found")
+        raise HTTPException(status_code=404, detail="项目不存在")
     has_environment = db.query(TestEnvironment.id).filter(TestEnvironment.project_id == project_id).first()
     environment = TestEnvironment(
         project_id=project_id,
@@ -61,7 +61,7 @@ def create_environment(project_id: int, payload: EnvironmentCreate, db: Session 
     return _environment_to_read(environment)
 
 
-@router.get("", response_model=List[EnvironmentRead])
+@router.get("", response_model=List[EnvironmentRead], summary="获取测试环境列表")
 def list_environments(project_id: int, db: Session = Depends(get_db)):
     environments = (
         db.query(TestEnvironment)
@@ -72,7 +72,7 @@ def list_environments(project_id: int, db: Session = Depends(get_db)):
     return [_environment_to_read(environment) for environment in environments]
 
 
-@router.put("/{environment_id}", response_model=EnvironmentRead)
+@router.put("/{environment_id}", response_model=EnvironmentRead, summary="更新测试环境")
 def update_environment(
     project_id: int,
     environment_id: int,
@@ -85,7 +85,7 @@ def update_environment(
         .first()
     )
     if environment is None:
-        raise HTTPException(status_code=404, detail="environment not found")
+        raise HTTPException(status_code=404, detail="测试环境不存在")
     changes = payload.model_dump(exclude_unset=True)
     if "name" in changes:
         environment.name = changes["name"]
@@ -100,7 +100,7 @@ def update_environment(
     return _environment_to_read(environment)
 
 
-@router.delete("/{environment_id}")
+@router.delete("/{environment_id}", summary="删除测试环境")
 def delete_environment(project_id: int, environment_id: int, db: Session = Depends(get_db)):
     environment = (
         db.query(TestEnvironment)
@@ -108,7 +108,7 @@ def delete_environment(project_id: int, environment_id: int, db: Session = Depen
         .first()
     )
     if environment is None:
-        raise HTTPException(status_code=404, detail="environment not found")
+        raise HTTPException(status_code=404, detail="测试环境不存在")
     was_active = environment.is_active
     db.query(TestRun).filter(TestRun.environment_id == environment_id).update(
         {TestRun.environment_id: None},
@@ -126,4 +126,4 @@ def delete_environment(project_id: int, environment_id: int, db: Session = Depen
         if replacement is not None:
             replacement.is_active = True
     db.commit()
-    return {"message": "environment deleted", "environment_id": environment_id}
+    return {"message": "测试环境已删除", "environment_id": environment_id}

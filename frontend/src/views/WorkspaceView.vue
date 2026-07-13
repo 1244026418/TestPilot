@@ -67,6 +67,10 @@ function parseObject(value: string) {
   return result
 }
 
+function categoryLabel(category: string) {
+  return { normal: '正常', exception: '异常', boundary: '边界', auth: '鉴权' }[category] || category
+}
+
 function resetEnvironmentForm() {
   editingEnvironmentId.value = null
   Object.assign(environmentForm, { name: '', base_url: '', variablesText: '{}', is_active: environments.value.length === 0 })
@@ -307,7 +311,7 @@ onMounted(async () => { try { await loadProjects(); await Promise.all([loadEnvir
         <h3>测试用例</h3>
         <el-table :data="cases" empty-text="请选择接口或新增用例">
           <el-table-column prop="title" label="用例" min-width="170" />
-          <el-table-column prop="category" label="类型" width="76" />
+          <el-table-column label="类型" width="76"><template #default="scope">{{ categoryLabel(scope.row.category) }}</template></el-table-column>
           <el-table-column label="规则" width="82"><template #default="scope">{{ scope.row.assertions.length }} 断言</template></el-table-column>
           <el-table-column label="提取" width="72"><template #default="scope">{{ scope.row.extractors.length }}</template></el-table-column>
           <el-table-column label="来源" width="68"><template #default="scope"><el-tag size="small" :type="scope.row.created_by_ai ? 'primary' : 'info'">{{ scope.row.created_by_ai ? 'GPT' : '手工' }}</el-tag></template></el-table-column>

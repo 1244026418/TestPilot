@@ -26,7 +26,7 @@ def _select_environment(db: Session, project_id: int, environment_id: Optional[i
     if environment_id is not None:
         environment = query.filter(TestEnvironment.id == environment_id).first()
         if environment is None:
-            raise ValueError("environment not found")
+            raise ValueError("测试环境不存在")
         return environment
     return query.filter(TestEnvironment.is_active.is_(True)).first()
 
@@ -39,7 +39,7 @@ def execute_project(db: Session, project_id: int, environment_id: Optional[int] 
         .first()
     )
     if project is None:
-        raise ValueError("project not found")
+        raise ValueError("项目不存在")
 
     environment = _select_environment(db, project_id, environment_id)
     variables: Dict[str, Any] = from_json_text(environment.variables_json) if environment else {}

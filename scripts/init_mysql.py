@@ -24,7 +24,7 @@ def main() -> None:
                 f"CREATE DATABASE IF NOT EXISTS `{database}` "
                 "DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
             )
-        print(f"MySQL database ready: {database}")
+        print(f"MySQL 数据库已就绪：{database}")
     finally:
         connection.close()
 
@@ -33,5 +33,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as exc:
-        print(f"MySQL init failed: {exc}")
+        print(f"MySQL 初始化失败：{exc}")
         sys.exit(1)

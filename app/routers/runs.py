@@ -13,12 +13,12 @@ from app.services.runner import execute_project
 
 router = APIRouter(
     prefix="/projects/{project_id}/runs",
-    tags=["runs"],
+    tags=["测试执行"],
     dependencies=[Depends(get_current_user)],
 )
 
 
-@router.post("", response_model=TestRunRead)
+@router.post("", response_model=TestRunRead, summary="执行项目测试")
 def run_project(project_id: int, payload: Optional[RunCreate] = None, db: Session = Depends(get_db)):
     try:
         run = execute_project(db, project_id, payload.environment_id if payload else None)
@@ -28,7 +28,7 @@ def run_project(project_id: int, payload: Optional[RunCreate] = None, db: Sessio
     return run
 
 
-@router.get("", response_model=List[TestRunRead])
+@router.get("", response_model=List[TestRunRead], summary="获取执行记录")
 def list_runs(project_id: int, db: Session = Depends(get_db)):
     return (
         db.query(TestRun)
@@ -39,11 +39,11 @@ def list_runs(project_id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/{run_id}/report")
+@router.get("/{run_id}/report", summary="下载 HTML 测试报告")
 def get_run_report(project_id: int, run_id: int, db: Session = Depends(get_db)):
     run = db.query(TestRun).filter(TestRun.project_id == project_id, TestRun.id == run_id).first()
     if run is None:
-        raise HTTPException(status_code=404, detail="run not found")
+        raise HTTPException(status_code=404, detail="执行记录不存在")
     if not run.report_path or not Path(run.report_path).exists():
-        raise HTTPException(status_code=404, detail="report not found")
+        raise HTTPException(status_code=404, detail="测试报告不存在")
     return FileResponse(run.report_path, media_type="text/html", filename=f"run_{run.id}.html")

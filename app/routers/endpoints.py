@@ -11,7 +11,7 @@ from app.utils import from_json_text, to_json_text
 
 router = APIRouter(
     prefix="/projects/{project_id}/endpoints",
-    tags=["endpoints"],
+    tags=["接口管理"],
     dependencies=[Depends(get_current_user)],
 )
 
@@ -30,11 +30,11 @@ def _endpoint_to_read(endpoint: ApiEndpoint) -> EndpointRead:
     )
 
 
-@router.post("", response_model=EndpointRead)
+@router.post("", response_model=EndpointRead, summary="创建接口")
 def create_endpoint(project_id: int, payload: EndpointCreate, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if project is None:
-        raise HTTPException(status_code=404, detail="project not found")
+        raise HTTPException(status_code=404, detail="项目不存在")
     endpoint = ApiEndpoint(
         project_id=project_id,
         name=payload.name,
@@ -50,13 +50,13 @@ def create_endpoint(project_id: int, payload: EndpointCreate, db: Session = Depe
     return _endpoint_to_read(endpoint)
 
 
-@router.get("", response_model=List[EndpointRead])
+@router.get("", response_model=List[EndpointRead], summary="获取接口列表")
 def list_endpoints(project_id: int, db: Session = Depends(get_db)):
     endpoints = db.query(ApiEndpoint).filter(ApiEndpoint.project_id == project_id).order_by(ApiEndpoint.id.desc()).all()
     return [_endpoint_to_read(endpoint) for endpoint in endpoints]
 
 
-@router.delete("/{endpoint_id}")
+@router.delete("/{endpoint_id}", summary="删除接口")
 def delete_endpoint(project_id: int, endpoint_id: int, db: Session = Depends(get_db)):
     endpoint = (
         db.query(ApiEndpoint)
@@ -64,7 +64,7 @@ def delete_endpoint(project_id: int, endpoint_id: int, db: Session = Depends(get
         .first()
     )
     if endpoint is None:
-        raise HTTPException(status_code=404, detail="endpoint not found")
+        raise HTTPException(status_code=404, detail="接口不存在")
     db.delete(endpoint)
     db.commit()
-    return {"message": "endpoint deleted", "endpoint_id": endpoint_id}
+    return {"message": "接口已删除", "endpoint_id": endpoint_id}

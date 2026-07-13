@@ -8,10 +8,10 @@ from app.schemas import AIGenerateRequest, AIGenerateResponse
 from app.services.openai_case_generator import generate_cases_smart
 
 
-router = APIRouter(prefix="/ai", tags=["ai"], dependencies=[Depends(get_current_user)])
+router = APIRouter(prefix="/ai", tags=["AI 用例生成"], dependencies=[Depends(get_current_user)])
 
 
-@router.post("/generate-cases", response_model=AIGenerateResponse)
+@router.post("/generate-cases", response_model=AIGenerateResponse, summary="生成测试用例草稿")
 def generate_case_drafts(payload: AIGenerateRequest):
     cases, provider, message = generate_cases_smart(
         requirement=payload.requirement,

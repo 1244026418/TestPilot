@@ -7,10 +7,10 @@ from app.schemas import ImportDocumentRequest, ImportResult
 from app.services.importer import import_openapi, import_postman
 
 
-router = APIRouter(prefix="/import", tags=["import"], dependencies=[Depends(get_current_user)])
+router = APIRouter(prefix="/import", tags=["文档导入"], dependencies=[Depends(get_current_user)])
 
 
-@router.post("/openapi/{project_id}", response_model=ImportResult)
+@router.post("/openapi/{project_id}", response_model=ImportResult, summary="导入 OpenAPI 文档")
 def import_openapi_document(project_id: int, payload: ImportDocumentRequest, db: Session = Depends(get_db)):
     try:
         imported, skipped, endpoint_ids = import_openapi(db, project_id, payload.content, payload.base_url)
@@ -24,7 +24,7 @@ def import_openapi_document(project_id: int, payload: ImportDocumentRequest, db:
     )
 
 
-@router.post("/postman/{project_id}", response_model=ImportResult)
+@router.post("/postman/{project_id}", response_model=ImportResult, summary="导入 Postman 集合")
 def import_postman_document(project_id: int, payload: ImportDocumentRequest, db: Session = Depends(get_db)):
     try:
         imported, skipped, endpoint_ids = import_postman(db, project_id, payload.content, payload.base_url)

@@ -7,14 +7,14 @@ from app.models import User
 from app.schemas import TokenResponse, UserCreate, UserLogin, UserRead
 
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["用户认证"])
 
 
-@router.post("/register", response_model=TokenResponse)
+@router.post("/register", response_model=TokenResponse, summary="注册用户")
 def register(payload: UserCreate, db: Session = Depends(get_db)):
     exists = db.query(User).filter(User.username == payload.username).first()
     if exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="username already exists")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="用户名已存在")
     role = "admin" if db.query(User).count() == 0 else "user"
     user = User(username=payload.username, password_hash=hash_password(payload.password), role=role)
     db.add(user)
@@ -23,15 +23,15 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     return TokenResponse(access_token=create_token(user.id, user.username, user.role), user=user)
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=TokenResponse, summary="用户登录")
 def login(payload: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == payload.username).first()
     if user is None or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid username or password")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户名或密码错误")
     return TokenResponse(access_token=create_token(user.id, user.username, user.role), user=user)
 
 
-@router.get("/me", response_model=UserRead)
+@router.get("/me", response_model=UserRead, summary="获取当前用户")
 def me(current_user: User = Depends(get_current_user)):
     return current_user
 

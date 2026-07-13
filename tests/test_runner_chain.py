@@ -112,7 +112,7 @@ def test_runner_rejects_environment_from_another_project():
             execute_project(db, first.id, environment.id)
             raised = False
         except ValueError as exc:
-            raised = str(exc) == "environment not found"
+            raised = str(exc) == "测试环境不存在"
         assert raised is True
     finally:
         db.close()

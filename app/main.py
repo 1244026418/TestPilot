@@ -35,12 +35,12 @@ for router in (auth.router, projects.router, environments.router, endpoints.rout
 app.include_router(demo_target.router)
 
 
-@app.get("/api/health", tags=["system"])
+@app.get("/api/health", tags=["系统"], summary="检查 API 服务状态")
 def api_health():
     return {"status": "ok"}
 
 
-@app.get("/health", tags=["system"])
+@app.get("/health", tags=["系统"], summary="检查服务状态")
 def health():
     return {"status": "ok"}
 
@@ -70,5 +70,5 @@ def index():
 @app.get("/{full_path:path}", include_in_schema=False)
 def spa_fallback(full_path: str):
     if full_path.startswith(("api/", "docs", "redoc", "openapi.json", "demo-target/")):
-        raise HTTPException(status_code=404, detail="not found")
+        raise HTTPException(status_code=404, detail="页面不存在")
     return _frontend_response(full_path)

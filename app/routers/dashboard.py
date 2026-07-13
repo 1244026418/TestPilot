@@ -7,10 +7,10 @@ from app.models import ApiEndpoint, Project, TestCase, TestRun
 from app.schemas import DashboardStats
 
 
-router = APIRouter(prefix="/dashboard", tags=["dashboard"], dependencies=[Depends(get_current_user)])
+router = APIRouter(prefix="/dashboard", tags=["工作台"], dependencies=[Depends(get_current_user)])
 
 
-@router.get("/stats", response_model=DashboardStats)
+@router.get("/stats", response_model=DashboardStats, summary="获取工作台统计数据")
 def dashboard_stats(db: Session = Depends(get_db)):
     latest_run = (
         db.query(TestRun)

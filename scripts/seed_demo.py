@@ -63,15 +63,20 @@ def main() -> None:
     init_db()
     db = SessionLocal()
     try:
-        project = db.query(Project).filter(Project.name == "Demo API 自动化测试").first()
+        project = (
+            db.query(Project)
+            .filter(Project.name.in_(["演示 API 自动化测试", "Demo API 自动化测试"]))
+            .first()
+        )
         if project is None:
             project = Project(
-                name="Demo API 自动化测试",
+                name="演示 API 自动化测试",
                 description="演示环境切换、五类断言以及登录 Token 链式传递。",
             )
             db.add(project)
             db.flush()
         else:
+            project.name = "演示 API 自动化测试"
             project.description = "演示环境切换、五类断言以及登录 Token 链式传递。"
 
         environment = (
@@ -178,11 +183,11 @@ def main() -> None:
             "验证数量为零时触发参数边界校验。",
             assertions=[
                 {"type": "status", "operator": "eq", "expected": 400},
-                {"type": "jsonpath", "target": "$.detail", "operator": "contains", "expected": "range"},
+                {"type": "jsonpath", "target": "$.detail", "operator": "contains", "expected": "允许范围"},
             ],
         )
         db.commit()
-        print(f"演示数据已就绪，project_id={project.id}")
+        print(f"演示数据已就绪，项目 ID={project.id}")
     finally:
         db.close()
 
